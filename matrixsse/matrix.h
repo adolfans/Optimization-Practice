@@ -2,13 +2,15 @@
 
 #ifndef __MATRIX_H__
 #define __MATRIX_H__
-
 #include "xmmintrin.h"
 
 class Matrix4x4_SSE
 {
 public:
 	__m128	v[4];
+	inline void Identify();
+	inline void FromAlignedMemory( float* );
+	inline void ToAlignedMemory( float* ) const;
 	inline void operator *= ( const Matrix4x4_SSE& );
 	inline Matrix4x4_SSE operator * ( const Matrix4x4_SSE& ) const;
 	inline void Set( const float xx, const float xy, const float xz, const float xw,
@@ -17,6 +19,35 @@ public:
 		const float wx, const float wy, const float wz, const float ww );
 	inline void Print();
 };
+
+void Matrix4x4_SSE::Identify()
+{
+	__declspec(align(16)) float matrix[16]
+	= { 1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1 };
+	v[0] = _mm_load_ps( &matrix[0] );
+	v[1] = _mm_load_ps( &matrix[4] );
+	v[2] = _mm_load_ps( &matrix[8] );
+	v[3] = _mm_load_ps( &matrix[12] );
+}
+
+void Matrix4x4_SSE::FromAlignedMemory( float* ptr )
+{
+	v[0] = _mm_load_ps( &ptr[0] );
+	v[1] = _mm_load_ps( &ptr[4] );
+	v[2] = _mm_load_ps( &ptr[8] );
+	v[3] = _mm_load_ps( &ptr[12] );
+}
+
+void Matrix4x4_SSE::ToAlignedMemory( float* ptr ) const
+{
+	_mm_store_ps( &ptr[0] , v[0] );
+	_mm_store_ps( &ptr[4] , v[1] );
+	_mm_store_ps( &ptr[8] , v[2] );
+	_mm_store_ps( &ptr[12], v[3] );
+}
 
 void Matrix4x4_SSE::Set( const float xx, const float xy, const float xz, const float xw,
 	const float yx, const float yy, const float yz, const float yw,
